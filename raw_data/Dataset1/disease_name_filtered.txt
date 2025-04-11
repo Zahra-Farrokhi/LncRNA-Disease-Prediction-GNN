@@ -1,0 +1,95 @@
+acquired immunodeficiency syndrome
+adenocarcinoma
+adenoma
+adrenocortical carcinoma
+agnosia
+agranulocytosis
+alopecia
+amyloidosis
+aortic aneurysm
+arteriosclerosis
+arthritis
+astrocytoma
+atherosclerosis
+autism spectrum disorder
+bipolar disorder
+blepharophimosis
+blindness
+burkitt lymphoma
+carcinoma
+choriocarcinoma
+cleft lip
+coronary artery disease
+dementia
+diabetes mellitus
+down syndrome
+endometriosis
+fibrosarcoma
+germinoma
+glaucoma
+glomerulonephritis
+hepatitis
+hepatitis b
+hepatitis c
+hepatoblastoma
+heroin dependence
+herpes zoster
+hyperglycemia
+hyperhomocysteinemia
+hyperinsulinism
+hypersensitivity
+hypertension
+hypoglycemia
+hypotrichosis
+infertility
+insulinoma
+intellectual disability
+intracranial aneurysm
+leiomyosarcoma
+leukemia
+leukopenia
+lymphadenitis
+lymphoma
+malaria
+medulloblastoma
+melanoma
+meningioma
+multiple myeloma
+multiple sclerosis
+multiple system atrophy
+myocardial infarction
+myopia
+narcolepsy
+nephritis
+neuroblastoma
+neutropenia
+obesity
+osteoarthritis
+osteoporosis
+osteosarcoma
+panic disorder
+pericarditis
+periodontitis
+pheochromocytoma
+polycystic ovary syndrome
+polycythemia
+polycythemia vera
+prader-willi syndrome
+pre-eclampsia
+prostatitis
+pseudohypoparathyroidism
+psoriasis
+retinal degeneration
+retinitis pigmentosa
+retinoblastoma
+rhabdomyosarcoma
+sarcoma
+schizophrenia
+seasonal affective disorder
+seminoma
+syndrome
+teratoma
+tuberculosis
+uremia
+urticaria
+vasculitis
