@@ -1,2 +1,3 @@
 An Effective Deep Learning and Graph Neural Network Approach for Accurate Prediction of LncRNA-Disease Associations
 
+In "Predicting LncRNA-Disease Association Using Gene Ontology and Deep Learning," a novel computational approach is proposed that integrates gene ontology with deep learning to predict associations between lncRNAs and diseases. The method extracts features from lncRNA sequences and disease gene interactions to construct similarity matrices and employs a graph neural network combining GCN and GAT layers. This approach achieves high predictive accuracy (e.g., AUC, AUPR) and provides valuable insights for identifying potential biomarkers and therapeutic targets.
