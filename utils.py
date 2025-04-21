@@ -1,4 +1,3 @@
-
 import os
 import numpy as np
 import torch
@@ -50,6 +49,59 @@ def plot_roc_pr_curves(fold_metrics, k_folds=5):
     plt.ylabel("Precision")
     plt.legend()
     
+    plt.tight_layout()
+    plt.show()
+
+def plot_tsne(embeddings, labels, title=None):
+    """
+    تصویرسازی t-SNE برای کاهش ابعاد بردارهای ویژگی و نمایش آن‌ها به صورت نمودار پراکندگی.
+    
+    پارامترها:
+        embeddings: آرایه ویژگی‌های استخراج‌شده (n_samples x n_features)
+        labels: برچسب‌های کلاس مربوط به هر نمونه
+        title: عنوان نمودار (اختیاری)
+    """
+    from sklearn.manifold import TSNE
+    tsne = TSNE(n_components=2, random_state=2341)
+    tsne_results = tsne.fit_transform(embeddings)
+    plt.figure(figsize=(8, 6))
+    unique_labels = np.unique(labels)
+    for label in unique_labels:
+        indices = (labels == label)
+        plt.scatter(tsne_results[indices, 0], tsne_results[indices, 1], label=f'Class {label}')
+    if title is not None:
+        plt.title(title)
+    else:
+        plt.title("t-SNE Visualization of Test Embeddings")
+    plt.xlabel("Component 1")
+    plt.ylabel("Component 2")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+def plot_confusion_matrix(cm, title='Confusion Matrix'):
+    """
+    رسم نمودار confusion matrix با استفاده از matplotlib.
+    
+    پارامترها:
+        cm: ماتریس سردرگمی به صورت numpy array (به شکل n_classes x n_classes)
+        title: عنوان نمودار
+    """
+    plt.figure()
+    plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
+    plt.title(title)
+    plt.colorbar()
+    tick_marks = np.arange(cm.shape[0])
+    plt.xticks(tick_marks, tick_marks)
+    plt.yticks(tick_marks, tick_marks)
+    thresh = cm.max() / 2.0
+    for i in range(cm.shape[0]):
+        for j in range(cm.shape[1]):
+            plt.text(j, i, format(cm[i, j], 'd'),
+                     horizontalalignment="center",
+                     color="white" if cm[i, j] > thresh else "black")
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
     plt.tight_layout()
     plt.show()
 
@@ -118,33 +170,70 @@ def neighbors(fringe, A, row=True):
     return res
 
 def subgraph_extraction_labeling(ind, A, h=1, u_features=None, v_features=None, class_values=None, max_node_label=None):
-    """استخراج زیرگراف h-hop به همراه برچسب‌گذاری گره‌ها"""
-    u_nodes, v_nodes = [ind[0]], [ind[1]]
-    u_dist, v_dist = [0], [0]
-    u_visited, v_visited = set([ind[0]]), set([ind[1]])
-    u_fringe, v_fringe = set([ind[0]]), set([ind[1]])
+    """
+    استخراج زیرگراف h-hop در گراف دو‌بخشی به همراه برچسب‌گذاری گره‌ها.
+    پارامترها:
+        ind: زوج (u_index, v_index) از یک نمونه اولیه
+        A: ماتریس همبستگی (Adjacency) گراف (به عنوان مثال، ماتریس شبکه پس از افزودن صفرهای اولیه)
+        h: تعداد hop مورد نظر جهت استخراج زیرگراف
+        u_features, v_features: ویژگی‌های مربوط به رئوس دو دسته
+        class_values: مقادیر کلاس (مثلاً [0, 1])
+        max_node_label: بیشینه برچسب نود
+    خروجی:
+        g: شی NetworkX شامل زیرگراف استخراج‌شده
+        node_labels: لیستی از برچسب‌های گره‌ها
+        node_features: ویژگی‌های گره‌ها (در صورت وجود)
+    """
+    # شروع با راس اولیه
+    u_nodes = [ind[0]]  # رئوس دسته u (مثلاً lncRNA)
+    v_nodes = [ind[1]]  # رئوس دسته v (مثلاً بیماری)
+    u_dist = [0]
+    v_dist = [0]
+    u_visited = set(u_nodes)
+    v_visited = set(v_nodes)
+    current_u = set(u_nodes)
+    current_v = set(v_nodes)
     
-    for dist in range(1, h+1):
-        u_fringe = neighbors(u_fringe, A, row=True) - u_visited
-        v_fringe = neighbors(v_fringe, A, row=False) - v_visited
-        if not u_fringe and not v_fringe:
+    for dist in range(1, h + 1):
+        new_v = set()
+        for node in current_u:
+            _, nei, _ = ssp.find(A[node, :])
+            new_v.update(nei)
+        new_v = new_v - v_visited
+        
+        new_u = set()
+        for node in current_v:
+            _, nei, _ = ssp.find(A[:, node])
+            new_u.update(nei)
+        new_u = new_u - u_visited
+        
+        if not new_u and not new_v:
             break
-        u_nodes.extend(list(u_fringe))
-        v_nodes.extend(list(v_fringe))
-        u_dist.extend([dist]*len(u_fringe))
-        v_dist.extend([dist]*len(v_fringe))
-        u_visited = u_visited.union(u_fringe)
-        v_visited = v_visited.union(v_fringe)
+        
+        u_nodes.extend(list(new_u))
+        v_nodes.extend(list(new_v))
+        u_dist.extend([dist] * len(new_u))
+        v_dist.extend([dist] * len(new_v))
+        u_visited.update(new_u)
+        v_visited.update(new_v)
+        
+        current_u = new_u
+        current_v = new_v
+
+    import numpy as np
+    subgraph = A[np.ix_(u_nodes, v_nodes)]
     
-    subgraph = A[u_nodes, :][:, v_nodes]
+    import networkx as nx
     g = nx.Graph()
     g.add_nodes_from(range(len(u_nodes)), bipartite='u')
-    g.add_nodes_from(range(len(u_nodes), len(u_nodes)+len(v_nodes)), bipartite='v')
-    u, v, r = ssp.find(subgraph)
-    r = r.astype(int)
-    v = v + len(u_nodes)
-    g.add_edges_from(zip(u, v))
-    node_labels = [min(d*2, max_node_label) for d in u_dist] + [min(d*2+1, max_node_label) for d in v_dist]
+    g.add_nodes_from(range(len(u_nodes), len(u_nodes) + len(v_nodes)), bipartite='v')
+    u_idx, v_idx = subgraph.nonzero()
+    for i, j in zip(u_idx, v_idx):
+        g.add_edge(i, j + len(u_nodes))
+    
+    u_labels = [min(d * 2, max_node_label) for d in u_dist]
+    v_labels = [min(d * 2 + 1, max_node_label) for d in v_dist]
+    node_labels = u_labels + v_labels
     
     if u_features is not None and v_features is not None:
         u_feat = u_features[u_nodes]
@@ -155,6 +244,7 @@ def subgraph_extraction_labeling(ind, A, h=1, u_features=None, v_features=None, 
         node_features = np.concatenate([u_feat, v_feat], axis=0)
     else:
         node_features = None
+        
     return g, node_labels, node_features
 
 def parallel_worker(g_label, ind, A, h=1, u_features=None, v_features=None, class_values=None, max_node_label=None):
@@ -166,7 +256,7 @@ def extracting_subgraphs(A, all_indices, all_labels, h=1, u_features=None, v_fea
     استخراج زیرگراف‌های h-hop برای تمام نمونه‌ها به صورت موازی.
     """
     if max_node_label is None:
-        max_node_label = h*2+1
+        max_node_label = h * 2 + 1
     class_values = np.array([0, 1], dtype=float)
     
     def helper(A, links, g_labels):
@@ -184,3 +274,5 @@ def extracting_subgraphs(A, all_indices, all_labels, h=1, u_features=None, v_fea
 
     graphs = helper(A, all_indices, all_labels)
     return graphs
+
+

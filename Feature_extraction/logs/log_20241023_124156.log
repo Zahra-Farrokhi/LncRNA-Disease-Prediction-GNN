@@ -1,0 +1,9 @@
+2024-10-23 12:41:56,081 [INFO] Logging initialized. Logs are being saved to logs\log_20241023_124156.log
+2024-10-23 12:41:56,081 [INFO] Using device: cpu
+2024-10-23 12:41:56,081 [INFO] Loading sequences...
+2024-10-23 12:41:56,682 [INFO] Total valid sequences: 225
+2024-10-23 12:41:56,682 [INFO] One-hot encoding sequences...
+2024-10-23 12:42:18,983 [INFO] Total encoded sequences with sufficient length: 225
+2024-10-23 12:42:18,983 [INFO] Initialized LNCRNADataset with 2436318 total samples.
+2024-10-23 12:42:22,566 [INFO] Training samples: 1949054, Validation samples: 487264
+2024-10-23 12:42:28,734 [INFO] Starting training loop...

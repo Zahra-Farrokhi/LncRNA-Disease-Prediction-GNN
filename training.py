@@ -1,4 +1,3 @@
-
 import time
 import numpy as np
 import torch
@@ -29,7 +28,7 @@ def train_multiple_epochs(train_graphs, val_graphs, test_graphs, model, adj, fol
         max_epochs: تعداد ایپوک‌های آموزش.
         
     خروجی:
-        دیکشنری شامل معیارهای ارزیابی نهایی و لیست خطاهای هر ایپوک.
+        دیکشنری شامل معیارهای ارزیابی نهایی، لیست خطاهای هر ایپوک، و سایر خروجی‌ها.
     """
     print(f"Starting training for fold {fold}...")
     LR = 0.001
@@ -88,6 +87,7 @@ def train_multiple_epochs(train_graphs, val_graphs, test_graphs, model, adj, fol
     model.eval()
     predictions = []
     labels = []
+    all_embeddings = []  # جمع‌آوری بردارهای ویژگی تست
     with torch.no_grad():
         for data in test_loader:
             data = data.to(device)
@@ -97,9 +97,19 @@ def train_multiple_epochs(train_graphs, val_graphs, test_graphs, model, adj, fol
             pred_prob = torch.softmax(out, dim=1)[:, 1]
             predictions.extend(pred_prob.cpu().numpy())
             labels.extend(data.y.cpu().numpy())
+            
+            # استخراج embeddings از لایه قبل از fc2
+            emb = model.get_embedding(data)
+            all_embeddings.append(emb.cpu().numpy())
     
     test_loss /= len(test_loader.dataset)
     predict_labels = (np.array(predictions) >= 0.5).astype(int)
+    
+    # محاسبه ماتریس سردرگمی
+    conf_matrix = metrics.confusion_matrix(np.array(labels), predict_labels)
+    print(f"Fold {fold} Metrics: Test Loss={test_loss:.4f}")
+    print("Confusion Matrix:")
+    print(conf_matrix)
     
     # محاسبه معیارهای ارزیابی
     fpr, tpr, _ = metrics.roc_curve(np.array(labels), np.array(predictions), pos_label=1)
@@ -112,7 +122,8 @@ def train_multiple_epochs(train_graphs, val_graphs, test_graphs, model, adj, fol
     precision = metrics.precision_score(np.array(labels), predict_labels)
     mcc = metrics.matthews_corrcoef(np.array(labels), predict_labels)
     
-    print(f"Fold {fold} Metrics: Accuracy={accuracy:.4f}, Precision={precision:.4f}, Recall={recall:.4f}, F1={f1:.4f}, MCC={mcc:.4f}, Test Loss={test_loss:.4f}")
+    # ترکیب تمام embeddings تست (تبدیل لیست از آرایه‌ها به یک آرایه بزرگ)
+    test_embeddings = np.concatenate(all_embeddings, axis=0)
     
     return {
         'test_auc': auc_score,
@@ -130,5 +141,9 @@ def train_multiple_epochs(train_graphs, val_graphs, test_graphs, model, adj, fol
         'precision_curve': precision_curve,
         'recall_curve': recall_curve,
         'truth': np.array(labels),
-        'predictions': np.array(predictions)
+        'predictions': np.array(predictions),
+        'confusion_matrix': conf_matrix,
+        'test_embeddings': test_embeddings
     }
+
+

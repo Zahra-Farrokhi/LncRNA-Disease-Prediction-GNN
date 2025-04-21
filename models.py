@@ -1,5 +1,3 @@
-
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -77,3 +75,36 @@ class gGATLDA(torch.nn.Module):
         x = self.dropout(x)
         x = self.fc2(x)  # خروجی خام (logits)
         return x
+
+    def get_embedding(self, data):
+        """
+        مشابه forward اما تا قبل از لایه نهایی fc2 اجرا می‌شود.
+        این متد بردار ویژگی (embedding) استخراج‌شده از گراف را برمی‌گرداند.
+        """
+        x, edge_index, batch = data.x, data.edge_index, data.batch
+
+        # عبور از لایه‌های GCN
+        for layer, bn in zip(self.gcn_layers, self.gcn_bns):
+            x = F.relu(layer(x, edge_index))
+            x = bn(x)
+            x = F.dropout(x, p=0.3, training=self.training)
+        
+        # عبور از لایه‌های GAT
+        x = self.gat1(x, edge_index)
+        x = self.bn1(x)
+        x = F.elu(x)
+        x = self.gat2(x, edge_index)
+        x = self.bn2(x)
+        x = F.elu(x)
+        x = self.gat3(x, edge_index)
+        x = F.elu(x)
+        
+        # global pooling
+        x = global_add_pool(x, batch)
+        
+        # لایه fc1 به عنوان خروجی embedding
+        x = self.dropout(x)
+        x = F.relu(self.fc1(x))
+        return x
+
+

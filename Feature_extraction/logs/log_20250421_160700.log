@@ -1,0 +1,9 @@
+2025-04-21 16:07:00,573 [INFO] Logging initialized. Logs are being saved to logs\log_20250421_160700.log
+2025-04-21 16:07:01,263 [INFO] Using device: cuda
+2025-04-21 16:07:01,263 [INFO] Loading sequences...
+2025-04-21 16:07:01,837 [INFO] Total valid sequences: 156
+2025-04-21 16:07:01,837 [INFO] One-hot encoding sequences...
+2025-04-21 16:07:31,021 [INFO] Total encoded sequences with sufficient length: 156
+2025-04-21 16:07:31,024 [INFO] Initialized LNCRNADataset with 2298572 total samples.
+2025-04-21 16:07:36,435 [INFO] Training samples: 1838857, Validation samples: 459715
+2025-04-21 16:07:47,224 [ERROR] An unexpected error occurred: `np.Inf` was removed in the NumPy 2.0 release. Use `np.inf` instead.

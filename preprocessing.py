@@ -92,3 +92,4 @@ def load_data(dataset):
     v_idx = v_idx + 1
     
     return u_features, v_features, net, labels, u_idx, v_idx, num_list
+
